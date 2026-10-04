@@ -226,7 +226,7 @@
 </head>
 <body>
 
-  <!-- 상단 왼쪽/오른쪽 버튼 -->
+  <!-- 상단 버튼 -->
   <div class="top-bar">
     <button class="top-btn" onclick="resetCard()">
       <span>↺</span> 처음으로
@@ -253,7 +253,7 @@
     <div class="meaning-box" id="meaningText">정확성</div>
   </div>
 
-  <!-- 하단 버튼들 -->
+  <!-- 하단 버튼 -->
   <div class="buttons-container">
     <button class="btn btn-dark" style="grid-column: span 2;" onclick="toggleMeaning()">
       <span>ㅎ</span> 한국어
@@ -502,6 +502,7 @@
     let knownCount = 0;
     let isMeaningShown = false;
 
+    // 챕터 초기화 함수 (누적 방식: 0 ~ chap * 20)
     function initChapter(chap) {
       currentChapter = chap;
       const count = Math.min(chap * 20, rawWordList.length);
@@ -511,6 +512,7 @@
       updateCard();
     }
 
+    // 카드 화면 갱신
     function updateCard() {
       const current = currentChapterList[currentIndex];
       const maxCount = Math.min(currentChapter * 20, rawWordList.length);
@@ -525,6 +527,7 @@
       document.getElementById('meaningText').classList.remove('show');
     }
 
+    // 뜻 표시 토글
     function toggleMeaning() {
       isMeaningShown = !isMeaningShown;
       const meaningBox = document.getElementById('meaningText');
@@ -535,15 +538,18 @@
       }
     }
 
+    // 알고있음 버튼
     function handleKnow() {
       knownCount++;
       nextCard();
     }
 
+    // 공부하겠음 버튼
     function handleStudy() {
       nextCard();
     }
 
+    // 다음 카드로 이동
     function nextCard() {
       if (currentIndex < currentChapterList.length - 1) {
         currentIndex++;
@@ -551,12 +557,12 @@
       } else {
         alert(`🎉 제 ${currentChapter}장 학습 완료!\n총 ${currentChapterList.length}개 단어 중 ${knownCount}개를 알고 있습니다.`);
         
-        // 다음 챕터 해금
+        // 다음 챕터 해금 조건
         if (currentChapter === unlockedChapter && (currentChapter * 20) < rawWordList.length) {
           unlockedChapter++;
         }
         
-        // 다음 챕터로 진행 여부 확인
+        // 다음 챕터 진행 여부 확인
         if ((currentChapter * 20) < rawWordList.length) {
           if (confirm(`다음 제 ${currentChapter + 1}장을 시작하시겠습니까?`)) {
             initChapter(currentChapter + 1);
@@ -570,13 +576,14 @@
       }
     }
 
+    // 처음으로 리셋
     function resetCard() {
       currentIndex = 0;
       knownCount = 0;
       updateCard();
     }
 
-    /* 챕터 모달 관련 함수 */
+    /* 챕터 모달 관련 */
     function openChapterModal() {
       const listContainer = document.getElementById('chapterList');
       listContainer.innerHTML = '';
@@ -611,7 +618,7 @@
       document.getElementById('chapterModal').style.display = 'none';
     }
 
-    /* 편집 모달 관련 함수 */
+    /* 편집 모달 관련 */
     function openEditModal() {
       const current = currentChapterList[currentIndex];
       document.getElementById('editEn').value = current.en;
@@ -639,4 +646,3 @@
   </script>
 </body>
 </html>
-
