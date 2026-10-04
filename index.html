@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -20,7 +19,7 @@
       flex-direction: column;
       justify-content: space-between;
       align-items: center;
-      padding: 30px 20px 40px 20px;
+      padding: 20px 20px 40px 20px;
     }
 
     .top-bar {
@@ -29,25 +28,60 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
+      margin-bottom: 10px;
     }
 
-    .progress-text {
-      font-size: 1rem;
-      font-weight: 600;
-      color: #777;
+    .top-btn {
+      background-color: #f0f0f0;
+      color: #333;
+      border: 1px solid #ccc;
+      padding: 8px 14px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: bold;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 4px;
     }
 
     .edit-btn {
       background-color: #00a896;
       color: white;
       border: none;
-      padding: 8px 16px;
-      border-radius: 20px;
-      font-size: 0.9rem;
-      font-weight: bold;
-      cursor: pointer;
-      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
     }
+
+    .chapter-bar {
+      width: 100%;
+      max-width: 420px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #e6f4f1;
+      padding: 10px 16px;
+      border-radius: 12px;
+      margin-bottom: 10px;
+    }
+
+    .chapter-info {
+      font-weight: 700;
+      color: #00796b;
+      font-size: 1rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .progress-info {
+      display: flex;
+      gap: 12px;
+      font-size: 0.9rem;
+      font-weight: 600;
+    }
+
+    .progress-text { color: #555; }
+    .known-text { color: #00a896; font-weight: 700; }
 
     .card-container {
       width: 100%;
@@ -118,15 +152,10 @@
       box-shadow: 0 3px 0px rgba(0,0,0,0.15);
     }
 
-    .btn-dark {
-      background-color: #333337;
-    }
+    .btn-dark { background-color: #333337; }
+    .btn-teal { background-color: #00a896; }
 
-    .btn-teal {
-      background-color: #00a896;
-    }
-
-    /* Modal for Editing */
+    /* 모달 공통 */
     .modal {
       display: none;
       position: fixed;
@@ -144,28 +173,42 @@
       border-radius: 20px;
       width: 100%;
       max-width: 400px;
+      max-height: 80vh;
+      overflow-y: auto;
       display: flex;
       flex-direction: column;
-      gap: 16px;
+      gap: 12px;
     }
 
-    .modal-content h3 {
-      color: #333;
-      font-size: 1.3rem;
+    .chapter-list-item {
+      padding: 14px;
+      border-radius: 12px;
+      background: #f8f9fa;
+      border: 1px solid #e9ecef;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+      font-weight: bold;
     }
 
-    .modal-content input {
-      width: 100%;
-      padding: 12px;
-      border: 1px solid #ccc;
-      border-radius: 10px;
-      font-size: 1rem;
+    .chapter-list-item.locked {
+      background: #f1f3f5;
+      color: #adb5bd;
+      cursor: not-allowed;
+    }
+
+    .chapter-list-item.active {
+      border: 2px solid #00a896;
+      background: #e6f4f1;
+      color: #00796b;
     }
 
     .modal-buttons {
       display: flex;
       gap: 10px;
       justify-content: flex-end;
+      margin-top: 10px;
     }
 
     .modal-btn {
@@ -178,33 +221,60 @@
 
     .save-btn { background-color: #00a896; color: white; }
     .cancel-btn { background-color: #ccc; color: #333; }
+    .input-field { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 10px; font-size: 1rem; }
   </style>
 </head>
 <body>
 
+  <!-- 상단 왼쪽/오른쪽 버튼 -->
   <div class="top-bar">
-    <div class="progress-text" id="progressText">1 / 201</div>
-    <button class="edit-btn" onclick="openEditModal()">[편집]</button>
+    <button class="top-btn" onclick="resetCard()">
+      <span>↺</span> 처음으로
+    </button>
+    <button class="top-btn edit-btn" onclick="openEditModal()">
+      <span>✎</span> [편집]
+    </button>
   </div>
 
+  <!-- 챕터 및 진행률 바 -->
+  <div class="chapter-bar">
+    <div class="chapter-info" onclick="openChapterModal()" id="chapterTitle">
+      제 1장 (No.1~20) ▾
+    </div>
+    <div class="progress-info">
+      <span class="progress-text" id="progressText">1 / 20</span>
+      <span class="known-text" id="knownText">알고있음: 0</span>
+    </div>
+  </div>
+
+  <!-- 카드 구역 -->
   <div class="card-container">
     <div class="word-text" id="wordText">precision</div>
     <div class="meaning-box" id="meaningText">정확성</div>
   </div>
 
+  <!-- 하단 버튼들 -->
   <div class="buttons-container">
-    <button class="btn btn-dark" onclick="toggleMeaning()">
+    <button class="btn btn-dark" style="grid-column: span 2;" onclick="toggleMeaning()">
       <span>ㅎ</span> 한국어
     </button>
-    <button class="btn btn-dark" onclick="resetCard()">
-      <span>↺</span> 처음으로
-    </button>
-    <button class="btn btn-teal" onclick="nextCard()">
+    <button class="btn btn-teal" onclick="handleStudy()">
       <span>?</span> 공부하겠음
     </button>
-    <button class="btn btn-teal" onclick="nextCard()">
+    <button class="btn btn-teal" onclick="handleKnow()">
       <span>✓</span> 알고있음
     </button>
+  </div>
+
+  <!-- 챕터 선택 모달 -->
+  <div class="modal" id="chapterModal">
+    <div class="modal-content">
+      <h3 style="margin-bottom: 10px;">챕터 선택 (누적 학습)</h3>
+      <div id="chapterList" style="display: flex; flex-direction: column; gap: 8px;"></div>
+      <div class="modal-buttons">
+        <button class="modal-btn cancel-btn" onclick="closeChapterModal()">닫기</button>
+      </div>
+    </div>
   </div>
 
   <!-- 편집 모달 -->
@@ -212,9 +282,9 @@
     <div class="modal-content">
       <h3>현재 단어 수정</h3>
       <label>영단어</label>
-      <input type="text" id="editEn">
+      <input type="text" id="editEn" class="input-field">
       <label>한국어 뜻</label>
-      <input type="text" id="editKo">
+      <input type="text" id="editKo" class="input-field">
       <div class="modal-buttons">
         <button class="modal-btn cancel-btn" onclick="closeEditModal()">취소</button>
         <button class="modal-btn save-btn" onclick="saveCurrentWord()">저장</button>
@@ -223,7 +293,7 @@
   </div>
 
   <script>
-    const wordList = [
+    const rawWordList = [
       { en: "precision", ko: "정확성" },
       { en: "determinacy", ko: "확정성, 결정성" },
       { en: "requirement", ko: "필요조건" },
@@ -425,14 +495,31 @@
       { en: "excellence", ko: "탁월함" }
     ];
 
+    let currentChapter = 1;
+    let unlockedChapter = 1;
+    let currentChapterList = [];
     let currentIndex = 0;
+    let knownCount = 0;
     let isMeaningShown = false;
 
+    function initChapter(chap) {
+      currentChapter = chap;
+      const count = Math.min(chap * 20, rawWordList.length);
+      currentChapterList = rawWordList.slice(0, count);
+      currentIndex = 0;
+      knownCount = 0;
+      updateCard();
+    }
+
     function updateCard() {
-      const current = wordList[currentIndex];
+      const current = currentChapterList[currentIndex];
+      const maxCount = Math.min(currentChapter * 20, rawWordList.length);
+      
+      document.getElementById('chapterTitle').innerHTML = `제 ${currentChapter}장 (No.1~${maxCount}) ▾`;
       document.getElementById('wordText').textContent = current.en;
       document.getElementById('meaningText').textContent = current.ko;
-      document.getElementById('progressText').textContent = `${currentIndex + 1} / ${wordList.length}`;
+      document.getElementById('progressText').textContent = `${currentIndex + 1} / ${currentChapterList.length}`;
+      document.getElementById('knownText').textContent = `알고있음: ${knownCount}`;
       
       isMeaningShown = false;
       document.getElementById('meaningText').classList.remove('show');
@@ -448,24 +535,85 @@
       }
     }
 
+    function handleKnow() {
+      knownCount++;
+      nextCard();
+    }
+
+    function handleStudy() {
+      nextCard();
+    }
+
     function nextCard() {
-      if (currentIndex < wordList.length - 1) {
+      if (currentIndex < currentChapterList.length - 1) {
         currentIndex++;
         updateCard();
       } else {
-        alert("모든 단어(201개)를 학습하셨습니다!");
-        currentIndex = 0;
-        updateCard();
+        alert(`🎉 제 ${currentChapter}장 학습 완료!\n총 ${currentChapterList.length}개 단어 중 ${knownCount}개를 알고 있습니다.`);
+        
+        // 다음 챕터 해금
+        if (currentChapter === unlockedChapter && (currentChapter * 20) < rawWordList.length) {
+          unlockedChapter++;
+        }
+        
+        // 다음 챕터로 진행 여부 확인
+        if ((currentChapter * 20) < rawWordList.length) {
+          if (confirm(`다음 제 ${currentChapter + 1}장을 시작하시겠습니까?`)) {
+            initChapter(currentChapter + 1);
+          } else {
+            initChapter(currentChapter);
+          }
+        } else {
+          alert("축하합니다! 모든 챕터 단어를 이수하셨습니다!");
+          initChapter(currentChapter);
+        }
       }
     }
 
     function resetCard() {
       currentIndex = 0;
+      knownCount = 0;
       updateCard();
     }
 
+    /* 챕터 모달 관련 함수 */
+    function openChapterModal() {
+      const listContainer = document.getElementById('chapterList');
+      listContainer.innerHTML = '';
+      const totalChapters = Math.ceil(rawWordList.length / 20);
+
+      for (let i = 1; i <= totalChapters; i++) {
+        const count = Math.min(i * 20, rawWordList.length);
+        const item = document.createElement('div');
+        const isLocked = i > unlockedChapter;
+        const isActive = i === currentChapter;
+
+        item.className = `chapter-list-item ${isLocked ? 'locked' : ''} ${isActive ? 'active' : ''}`;
+        item.innerHTML = `
+          <span>제 ${i}장 (No.1~${count})</span>
+          <span>${isLocked ? '🔒 잠김' : (isActive ? '학습중' : '선택')}</span>
+        `;
+
+        if (!isLocked) {
+          item.onclick = () => {
+            initChapter(i);
+            closeChapterModal();
+          };
+        }
+
+        listContainer.appendChild(item);
+      }
+
+      document.getElementById('chapterModal').style.display = 'flex';
+    }
+
+    function closeChapterModal() {
+      document.getElementById('chapterModal').style.display = 'none';
+    }
+
+    /* 편집 모달 관련 함수 */
     function openEditModal() {
-      const current = wordList[currentIndex];
+      const current = currentChapterList[currentIndex];
       document.getElementById('editEn').value = current.en;
       document.getElementById('editKo').value = current.ko;
       document.getElementById('editModal').style.display = 'flex';
@@ -479,14 +627,16 @@
       const newEn = document.getElementById('editEn').value;
       const newKo = document.getElementById('editKo').value;
       
-      wordList[currentIndex].en = newEn;
-      wordList[currentIndex].ko = newKo;
+      currentChapterList[currentIndex].en = newEn;
+      currentChapterList[currentIndex].ko = newKo;
       
       updateCard();
       closeEditModal();
     }
 
-    updateCard();
+    // 최초 1장 시작
+    initChapter(1);
   </script>
 </body>
 </html>
+
