@@ -1,330 +1,492 @@
+
 <!DOCTYPE html>
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>단어장</title>
+  <title>영단어 학습 카드</title>
   <style>
-    :root {
-      --primary-color: #2c3e50;
-      --accent-color: #3498db;
-      --bg-color: #f8f9fa;
-      --card-bg: #ffffff;
-      --text-color: #333333;
-      --subtext-color: #555555;
-      --border-color: #e2e8f0;
-    }
-
     * {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     }
 
     body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-      background-color: var(--bg-color);
-      color: var(--text-color);
-      line-height: 1.6;
-      padding: 20px;
+      background-color: #fcfcfc;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      align-items: center;
+      padding: 30px 20px 40px 20px;
     }
 
-    .container {
-      max-width: 800px;
-      margin: 0 auto;
-      background: var(--card-bg);
-      border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-      padding: 24px;
-      position: relative;
-    }
-
-    header {
+    .top-bar {
+      width: 100%;
+      max-width: 420px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      border-bottom: 2px solid var(--border-color);
-      padding-bottom: 16px;
-      margin-bottom: 24px;
     }
 
-    h1 {
-      font-size: 1.5rem;
-      color: var(--primary-color);
+    .progress-text {
+      font-size: 1rem;
+      font-weight: 600;
+      color: #777;
     }
 
     .edit-btn {
-      background-color: var(--accent-color);
+      background-color: #00a896;
       color: white;
       border: none;
       padding: 8px 16px;
-      border-radius: 6px;
-      font-weight: 600;
+      border-radius: 20px;
+      font-size: 0.9rem;
+      font-weight: bold;
       cursor: pointer;
-      transition: background-color 0.2s ease;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
     }
 
-    .edit-btn:hover {
-      background-color: #2980b9;
-    }
-
-    .section-title {
-      font-size: 1.2rem;
-      color: var(--primary-color);
-      margin: 24px 0 12px 0;
-      padding-bottom: 6px;
-      border-bottom: 1px solid var(--border-color);
-    }
-
-    .word-list {
+    .card-container {
+      width: 100%;
+      max-width: 420px;
+      flex: 1;
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      justify-content: center;
+      align-items: center;
+      margin: 20px 0;
     }
 
-    .word-item {
+    .word-text {
+      font-size: 2.8rem;
+      font-weight: 700;
+      color: #009688;
+      text-align: center;
+      word-break: break-word;
+      margin-bottom: 20px;
+    }
+
+    .meaning-box {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: #333;
+      text-align: center;
+      min-height: 50px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      visibility: hidden;
+      padding: 10px;
+      background-color: #f0f7f6;
+      border-radius: 12px;
+      width: 100%;
+    }
+
+    .meaning-box.show {
+      visibility: visible;
+    }
+
+    .buttons-container {
+      width: 100%;
+      max-width: 420px;
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 16px;
-      padding: 10px 12px;
-      border-radius: 6px;
-      background-color: #fdfdfd;
-      border: 1px solid var(--border-color);
+    }
+
+    .btn {
+      height: 65px;
+      border: none;
+      border-radius: 35px;
+      font-size: 1.25rem;
+      font-weight: bold;
+      color: white;
+      display: flex;
       align-items: center;
+      justify-content: center;
+      gap: 8px;
+      cursor: pointer;
+      box-shadow: 0 6px 0px rgba(0,0,0,0.15);
+      transition: transform 0.1s;
     }
 
-    .english {
-      font-weight: 600;
-      color: var(--primary-color);
-      font-size: 1.05rem;
+    .btn:active {
+      transform: translateY(3px);
+      box-shadow: 0 3px 0px rgba(0,0,0,0.15);
     }
 
-    .korean {
-      color: var(--subtext-color);
+    .btn-dark {
+      background-color: #333337;
+    }
+
+    .btn-teal {
+      background-color: #00a896;
+    }
+
+    /* Modal for Editing */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.5);
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      z-index: 100;
+    }
+
+    .modal-content {
+      background: white;
+      padding: 24px;
+      border-radius: 20px;
+      width: 100%;
+      max-width: 400px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .modal-content h3 {
+      color: #333;
+      font-size: 1.3rem;
+    }
+
+    .modal-content input {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #ccc;
+      border-radius: 10px;
       font-size: 1rem;
     }
 
-    .edit-input {
-      width: 100%;
-      padding: 6px 10px;
-      border: 1px solid var(--accent-color);
-      border-radius: 4px;
-      font-size: 0.95rem;
+    .modal-buttons {
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
     }
 
-    @media (max-width: 600px) {
-      .word-item {
-        grid-template-columns: 1fr;
-        gap: 4px;
-      }
+    .modal-btn {
+      padding: 10px 20px;
+      border-radius: 10px;
+      border: none;
+      font-weight: bold;
+      cursor: pointer;
     }
+
+    .save-btn { background-color: #00a896; color: white; }
+    .cancel-btn { background-color: #ccc; color: #333; }
   </style>
 </head>
 <body>
 
-  <div class="container">
-    <header>
-      <h1>단어장</h1>
-      <button id="editBtn" class="edit-btn" onclick="toggleEdit()">[편집]</button>
-    </header>
+  <div class="top-bar">
+    <div class="progress-text" id="progressText">1 / 201</div>
+    <button class="edit-btn" onclick="openEditModal()">[편집]</button>
+  </div>
 
-    <div id="wordContainer">
-      <!-- 동적으로 생성되는 영역 -->
+  <div class="card-container">
+    <div class="word-text" id="wordText">precision</div>
+    <div class="meaning-box" id="meaningText">정확성</div>
+  </div>
+
+  <div class="buttons-container">
+    <button class="btn btn-dark" onclick="toggleMeaning()">
+      <span>ㅎ</span> 한국어
+    </button>
+    <button class="btn btn-dark" onclick="resetCard()">
+      <span>↺</span> 처음으로
+    </button>
+    <button class="btn btn-teal" onclick="nextCard()">
+      <span>?</span> 공부하겠음
+    </button>
+    <button class="btn btn-teal" onclick="nextCard()">
+      <span>✓</span> 알고있음
+    </button>
+  </div>
+
+  <!-- 편집 모달 -->
+  <div class="modal" id="editModal">
+    <div class="modal-content">
+      <h3>현재 단어 수정</h3>
+      <label>영단어</label>
+      <input type="text" id="editEn">
+      <label>한국어 뜻</label>
+      <input type="text" id="editKo">
+      <div class="modal-buttons">
+        <button class="modal-btn cancel-btn" onclick="closeEditModal()">취소</button>
+        <button class="modal-btn save-btn" onclick="saveCurrentWord()">저장</button>
+      </div>
     </div>
   </div>
 
   <script>
-    let vocabularyData = [
-      {
-        section: "섹션 A",
-        words: [
-          { en: "contemporary", ko: "현대의, 당대의" },
-          { en: "employ", ko: "(수단으로) 사용하다" },
-          { en: "make reference to", ko: "~를 언급하다, 참조하다" },
-          { en: "abstractionist", ko: "추상화가" },
-          { en: "concerned about", ko: "~에 신경 쓰느, 관심 있는" },
-          { en: "extensive", ko: "광범위한" },
-          { en: "marked", ko: "뚜렷한" },
-          { en: "contrast", ko: "대조" },
-          { en: "decade", ko: "10년" },
-          { en: "utilize", ko: "활용하다" },
-          { en: "disapprovingly", ko: "불만스러운 듯이, 탐탁지 않은 뉘앙스로" },
-          { en: "generation", ko: "세대" },
-          { en: "appropriately", ko: "적절하게" },
-          { en: "integrated", ko: "통합된" },
-          { en: "portable", ko: "휴대용의, 이동식의" },
-          { en: "surpass", ko: "능가하다" },
-          { en: "resemble", ko: "닮다" },
-          { en: "bulky", ko: "부피가 (너무) 큰" }
-        ],
-        choiceWords: [
-          { en: "distinct", ko: "독특한, 별개의" },
-          { en: "extinct", ko: "멸종한" }
-        ]
-      },
-      {
-        section: "섹션 B",
-        words: [
-          { en: "constructive", ko: "건설적인" },
-          { en: "destructive", ko: "파괴적인" },
-          { en: "expand", ko: "확장하다" },
-          { en: "prediction", ko: "예측" },
-          { en: "existence", ko: "존재" },
-          { en: "accordingly", ko: "그에 맞춰" },
-          { en: "embrace", ko: "수용하다" },
-          { en: "destroy", ko: "파괴하다" },
-          { en: "add A to B", ko: "A를 B에 추가하다, 더하다" },
-          { en: "build upon", ko: "~을 기반으로 하다" },
-          { en: "foster", ko: "촉진하다" },
-          { en: "draw upon", ko: "~을 이용하다" },
-          { en: "ever-evolving", ko: "계속 진화하는" }
-        ],
-        choiceWords: [
-          { en: "replace", ko: "교체하다, 대체하다" },
-          { en: "analyze", ko: "분석하다" }
-        ]
-      },
-      {
-        section: "섹션 C-1",
-        words: [
-          { en: "precision", ko: "정확성" },
-          { en: "determinacy", ko: "확정성, 결정성" },
-          { en: "requirement", ko: "필요조건" },
-          { en: "to a large extent", ko: "상당히, 상당 부분" },
-          { en: "ongoing", ko: "계속 진행 중인" },
-          { en: "representation", ko: "진술, 설명, 표현" },
-          { en: "put a premium on", ko: "~을 중시(장려)하다" },
-          { en: "hence", ko: "그러므로, 이에 따라" },
-          { en: "refinement", ko: "정제, 정련" },
-          { en: "varied", ko: "다양한" },
-          { en: "insight", ko: "통찰(력)" },
-          { en: "approximation", ko: "접근, 근접, 근사" },
-          { en: "unmask", ko: "들추어내다, ~의 가면을 벗기다" },
-          { en: "illusion", ko: "환상, 착각" },
-          { en: "alternative", ko: "대안적인, 대안의" },
-          { en: "indeed", ko: "진정, 참으로" }
-        ],
-        choiceWords: [
-          { en: "criterion (pl. criteria)", ko: "기준, 척도" },
-          { en: "seemingly", ko: "겉으로는, 보기에는" },
-          { en: "coexistence", ko: "공존" },
-          { en: "reliability", ko: "신뢰성" }
-        ]
-      },
-      {
-        section: "섹션 C-2",
-        words: [
-          { en: "spontaneously", ko: "저절로" },
-          { en: "unambiguously", ko: "분명히 (↔ 모호하게 ambiguously)" },
-          { en: "slightly", ko: "약간" },
-          { en: "natural selection", ko: "[진화] 자연 선택" },
-          { en: "get rid of", ko: "~를 제거하다, 없애다" },
-          { en: "conversely", ko: "반대로" },
-          { en: "strike ~ down", ko: "~의 목숨을 앗아가다, ~를 쓰러뜨리다" },
-          { en: "reasonably", ko: "마땅히, 합리적으로" },
-          { en: "promptly", ko: "신속하게, 재빨리" },
-          { en: "A outcompete B", ko: "A가 (경쟁에서) B보다 우세하다" },
-          { en: "fortunate", ko: "운이 좋은" },
-          { en: "reproductive", ko: "번식의, 번식이 가능한" },
-          { en: "accumulate", ko: "축적되다, 누적되다" },
-          { en: "so long as (=as long as)", ko: "~하는 한" }
-        ],
-        choiceWords: [
-          { en: "operate", ko: "기능하다, 작용하다" },
-          { en: "suppress", ko: "막다, 억누르다" },
-          { en: "compensate for", ko: "~를 상쇄하다" },
-          { en: "reproduce", ko: "번식하다" }
-        ]
-      }
+    const wordList = [
+      { en: "precision", ko: "정확성" },
+      { en: "determinacy", ko: "확정성, 결정성" },
+      { en: "requirement", ko: "필요조건" },
+      { en: "to a large extent", ko: "상당히, 상당 부분" },
+      { en: "ongoing", ko: "계속 진행 중인" },
+      { en: "representation", ko: "진술, 설명, 표현" },
+      { en: "put a premium on", ko: "~을 중시(장려)하다" },
+      { en: "hence", ko: "그러므로, 이에 따라" },
+      { en: "refinement", ko: "정제, 정련" },
+      { en: "varied", ko: "다양한" },
+      { en: "insight", ko: "통찰(력)" },
+      { en: "approximation", ko: "접근, 근접, 근사" },
+      { en: "unmask", ko: "들추어내다, ~의 가면을 벗기다" },
+      { en: "illusion", ko: "환상, 착각" },
+      { en: "alternative", ko: "대안적인, 대안의" },
+      { en: "indeed", ko: "진정, 참으로" },
+      { en: "criterion (pl. criteria)", ko: "기준, 척도" },
+      { en: "seemingly", ko: "겉으로는, 보기에는" },
+      { en: "coexistence", ko: "공존" },
+      { en: "reliability", ko: "신뢰성" },
+      { en: "contemporary", ko: "현대의, 당대의" },
+      { en: "employ", ko: "(수단으로) 사용하다" },
+      { en: "make reference to", ko: "~를 언급하다, 참조하다" },
+      { en: "abstractionist", ko: "추상화가" },
+      { en: "concerned about", ko: "~에 신경 쓰느, 관심 있는" },
+      { en: "extensive", ko: "광범위한" },
+      { en: "marked", ko: "뚜렷한" },
+      { en: "contrast", ko: "대조" },
+      { en: "decade", ko: "10년" },
+      { en: "utilize", ko: "활용하다" },
+      { en: "disapprovingly", ko: "불만스러운 듯이, 탐탁지 않은 뉘앙스로" },
+      { en: "generation", ko: "세대" },
+      { en: "appropriately", ko: "적절하게" },
+      { en: "integrated", ko: "통합된" },
+      { en: "portable", ko: "휴대용의, 이동식의" },
+      { en: "surpass", ko: "능가하다" },
+      { en: "resemble", ko: "닮다" },
+      { en: "bulky", ko: "부피가 (너무) 큰" },
+      { en: "distinct", ko: "독특한, 별개의" },
+      { en: "extinct", ko: "멸종한" },
+      { en: "constructive", ko: "건설적인" },
+      { en: "destructive", ko: "파괴적인" },
+      { en: "expand", ko: "확장하다" },
+      { en: "prediction", ko: "예측" },
+      { en: "existence", ko: "존재" },
+      { en: "accordingly", ko: "그에 맞춰" },
+      { en: "embrace", ko: "수용하다" },
+      { en: "destroy", ko: "파괴하다" },
+      { en: "add A to B", ko: "A를 B에 추가하다, 더하다" },
+      { en: "build upon", ko: "~을 기반으로 하다" },
+      { en: "foster", ko: "촉진하다" },
+      { en: "draw upon", ko: "~을 이용하다" },
+      { en: "ever-evolving", ko: "계속 진화하는" },
+      { en: "replace", ko: "교체하다, 대체하다" },
+      { en: "analyze", ko: "분석하다" },
+      { en: "spontaneously", ko: "저절로" },
+      { en: "unambiguously", ko: "분명히 (↔ 모호하게 ambiguously)" },
+      { en: "slightly", ko: "약간" },
+      { en: "natural selection", ko: "[진화] 자연 선택" },
+      { en: "get rid of", ko: "~를 제거하다, 없애다" },
+      { en: "conversely", ko: "반대로" },
+      { en: "strike ~ down", ko: "~의 목숨을 앗아가다, ~를 쓰러뜨리다" },
+      { en: "reasonably", ko: "마땅히, 합리적으로" },
+      { en: "promptly", ko: "신속하게, 재빨리" },
+      { en: "A outcompete B", ko: "A가 (경쟁에서) B보다 우세하다" },
+      { en: "fortunate", ko: "운이 좋은" },
+      { en: "reproductive", ko: "번식의, 번식이 가능한" },
+      { en: "accumulate", ko: "축적되다, 누적되다" },
+      { en: "so long as (=as long as)", ko: "~하는 한" },
+      { en: "operate", ko: "기능하다, 작용하다" },
+      { en: "suppress", ko: "막다, 억누르다" },
+      { en: "compensate for", ko: "~를 상쇄하다" },
+      { en: "reproduce", ko: "번식하다" },
+      { en: "unprecedented", ko: "전례 없는" },
+      { en: "disruption", ko: "혼란, 붕괴" },
+      { en: "acceleration", ko: "가속도, 촉진" },
+      { en: "profound", ko: "심오한, 엄청난" },
+      { en: "implication", ko: "영향, 함의" },
+      { en: "sustainability", ko: "지속 가능성" },
+      { en: "inequality", ko: "불평등" },
+      { en: "vulnerable", ko: "취약한" },
+      { en: "resilience", ko: "회복력" },
+      { en: "mitigate", ko: "완화하다" },
+      { en: "adaptation", ko: "적응" },
+      { en: "implementation", ko: "이행, 실행" },
+      { en: "comprehensive", ko: "포괄적인" },
+      { en: "collaboration", ko: "협력" },
+      { en: "stakeholder", ko: "이해관계자" },
+      { en: "perspective", ko: "관점, 시각" },
+      { en: "transition", ko: "전환, 변이" },
+      { en: "innovation", ko: "혁신" },
+      { en: "infrastructure", ko: "기반 시설, 인프라" },
+      { en: "allocation", ko: "할당, 배분" },
+      { en: "resource", ko: "자원" },
+      { en: "efficiency", ko: "효율성" },
+      { en: "consumption", ko: "소비" },
+      { en: "footprint", ko: "발자국, 영향" },
+      { en: "renewable", ko: "재생 가능한" },
+      { en: "emissions", ko: "배출, 배출물" },
+      { en: "neutrality", ko: "중립성" },
+      { en: "biodiversity", ko: "생물 다양성" },
+      { en: "preservation", ko: "보존, 보호" },
+      { en: "restoration", ko: "복원, 회복" },
+      { en: "ecosystem", ko: "생태계" },
+      { en: "degradation", ko: "저하, 악화" },
+      { en: "conservation", ko: "보존" },
+      { en: "incentive", ko: "유인책, 장려금" },
+      { en: "regulation", ko: "규제, 규정" },
+      { en: "compliance", ko: "준수, 따름" },
+      { en: "enforcement", ko: "집행, 강제" },
+      { en: "accountability", ko: "책임, 의무" },
+      { en: "transparency", ko: "투명성" },
+      { en: "governance", ko: "지배구조, 관리" },
+      { en: "initiative", ko: "주도권, 구상" },
+      { en: "framework", ko: "체계, 틀" },
+      { en: "benchmark", ko: "기준, 벤치마크" },
+      { en: "assessment", ko: "평가" },
+      { en: "evaluation", ko: "사정, 평가" },
+      { en: "methodology", ko: "방법론" },
+      { en: "quantitative", ko: "정량적인" },
+      { en: "qualitative", ko: "정성적인" },
+      { en: "empirical", ko: "실증적인, 경험적인" },
+      { en: "data-driven", ko: "데이터 기반의" },
+      { en: "hypothesis", ko: "가설" },
+      { en: "variable", ko: "변수" },
+      { en: "correlation", ko: "상관관계" },
+      { en: "causation", ko: "인과관계" },
+      { en: "statistically", ko: "통계적으로" },
+      { en: "significant", ko: "유의미한, 중요한" },
+      { en: "margin", ko: "여유, 여백, 마진" },
+      { en: "threshold", ko: "임계값, 문턱" },
+      { en: "trajectory", ko: "궤적, 경로" },
+      { en: "projection", ko: "예상, 투사" },
+      { en: "scenario", ko: "시나리오" },
+      { en: "baseline", ko: "기준선" },
+      { en: "benchmark", ko: "기준점" },
+      { en: "deviation", ko: "일탈, 편차" },
+      { en: "discrepancy", ko: "불일치, 차이" },
+      { en: "anomaly", ko: "변칙, 이례" },
+      { en: "paradigm", ko: "패러다임, 전형적인 예" },
+      { en: "shift", ko: "변화, 이동" },
+      { en: "transformation", ko: "변형, 변모" },
+      { en: "evolution", ko: "진화, 발전" },
+      { en: "adaptation", ko: "적응, 순응" },
+      { en: "integration", ko: "통합" },
+      { en: "cohesion", ko: "결속, 화합" },
+      { en: "diversity", ko: "다양성" },
+      { en: "inclusion", ko: "포용, 포함" },
+      { en: "equity", ko: "공정성, 형평성" },
+      { en: "accessibility", ko: "접근성" },
+      { en: "empowerment", ko: "권한 부여" },
+      { en: "capacity", ko: "수용력, 능력" },
+      { en: "capability", ko: "역량" },
+      { en: "competence", ko: "능숙함, 권한" },
+      { en: "expertise", ko: "전문 지식" },
+      { en: "proficiency", ko: "숙달, 능통" },
+      { en: "literacy", ko: "문해력, 이해 능력" },
+      { en: "pedagogy", ko: "교육학, 교수법" },
+      { en: "curriculum", ko: "교육과정" },
+      { en: "assessment", ko: "평가" },
+      { en: "feedback", ko: "피드백" },
+      { en: "engagement", ko: "참여, 관여" },
+      { en: "retention", ko: "보유, 기억" },
+      { en: "acquisition", ko: "습득, 습득물" },
+      { en: "cognitive", ko: "인지적인" },
+      { en: "psychological", ko: "심리적인" },
+      { en: "behavioral", ko: "행동의" },
+      { en: "motivation", ko: "동기 부여" },
+      { en: "perception", ko: "인식, 지각" },
+      { en: "attitude", ko: "태도, 자세" },
+      { en: "awareness", ko: "의식, 알고 있음" },
+      { en: "advocacy", ko: "옹호, 주창" },
+      { en: "mobilization", ko: "동원, 집결" },
+      { en: "outreach", ko: "지원 활동" },
+      { en: "campaign", ko: "캠페인, 운동" },
+      { en: "initiative", ko: "구상, 주도권" },
+      { en: "movement", ko: "운동, 흐름" },
+      { en: "coalition", ko: "연합, 연대" },
+      { en: "alliance", ko: "동맹, 결속" },
+      { en: "partnership", ko: "파트너십" },
+      { en: "network", ko: "네트워크,망" },
+      { en: "platform", ko: "플랫폼, 기반" },
+      { en: "ecosystem", ko: "생태계" },
+      { en: "synergy", ko: "시너지, 상승 효과" },
+      { en: "leverage", ko: "지배력, 활용하다" },
+      { en: "optimization", ko: "최적화" },
+      { en: "scalability", ko: "확장성" },
+      { en: "flexibility", ko: "유연성" },
+      { en: "agility", ko: "민첩성" },
+      { en: "adaptability", ko: "적응성" },
+      { en: "robustness", ko: "강건함, 견고함" },
+      { en: "reliability", ko: "신뢰성" },
+      { en: "consistency", ko: "일관성" },
+      { en: "integrity", ko: "진실성, 완전성" },
+      { en: "ethics", ko: "윤리" },
+      { en: "compliance", ko: "준수" },
+      { en: "standards", ko: "기준, 표준" },
+      { en: "quality", ko: "품질, 질" },
+      { en: "excellence", ko: "탁월함" }
     ];
 
-    let isEditing = false;
+    let currentIndex = 0;
+    let isMeaningShown = false;
 
-    function renderList() {
-      const container = document.getElementById('wordContainer');
-      container.innerHTML = '';
-
-      vocabularyData.forEach((sec, secIdx) => {
-        const secHeader = document.createElement('h2');
-        secHeader.className = 'section-title';
-        secHeader.textContent = sec.section;
-        container.appendChild(secHeader);
-
-        const wordList = document.createElement('div');
-        wordList.className = 'word-list';
-
-        sec.words.forEach((item, wIdx) => {
-          const itemDiv = document.createElement('div');
-          itemDiv.className = 'word-item';
-
-          if (isEditing) {
-            itemDiv.innerHTML = `
-              <input type="text" class="edit-input" value="${item.en}" onchange="updateWord(${secIdx}, 'words', ${wIdx}, 'en', this.value)">
-              <input type="text" class="edit-input" value="${item.ko}" onchange="updateWord(${secIdx}, 'words', ${wIdx}, 'ko', this.value)">
-            `;
-          } else {
-            itemDiv.innerHTML = `
-              <div class="english">${item.en}</div>
-              <div class="korean">${item.ko}</div>
-            `;
-          }
-          wordList.appendChild(itemDiv);
-        });
-
-        container.appendChild(wordList);
-
-        if (sec.choiceWords && sec.choiceWords.length > 0) {
-          const choiceHeader = document.createElement('h3');
-          choiceHeader.className = 'section-title';
-          choiceHeader.style.fontSize = '1rem';
-          choiceHeader.style.color = '#7f8c8d';
-          choiceHeader.textContent = '선지 단어';
-          container.appendChild(choiceHeader);
-
-          const choiceList = document.createElement('div');
-          choiceList.className = 'word-list';
-
-          sec.choiceWords.forEach((item, cIdx) => {
-            const itemDiv = document.createElement('div');
-            itemDiv.className = 'word-item';
-
-            if (isEditing) {
-              itemDiv.innerHTML = `
-                <input type="text" class="edit-input" value="${item.en}" onchange="updateWord(${secIdx}, 'choiceWords', ${cIdx}, 'en', this.value)">
-                <input type="text" class="edit-input" value="${item.ko}" onchange="updateWord(${secIdx}, 'choiceWords', ${cIdx}, 'ko', this.value)">
-              `;
-            } else {
-              itemDiv.innerHTML = `
-                <div class="english">${item.en}</div>
-                <div class="korean">${item.ko}</div>
-              `;
-            }
-            choiceList.appendChild(itemDiv);
-          });
-
-          container.appendChild(choiceList);
-        }
-      });
+    function updateCard() {
+      const current = wordList[currentIndex];
+      document.getElementById('wordText').textContent = current.en;
+      document.getElementById('meaningText').textContent = current.ko;
+      document.getElementById('progressText').textContent = `${currentIndex + 1} / ${wordList.length}`;
+      
+      isMeaningShown = false;
+      document.getElementById('meaningText').classList.remove('show');
     }
 
-    function toggleEdit() {
-      isEditing = !isEditing;
-      const editBtn = document.getElementById('editBtn');
-      if (isEditing) {
-        editBtn.textContent = '[저장]';
-        editBtn.style.backgroundColor = '#27ae60';
+    function toggleMeaning() {
+      isMeaningShown = !isMeaningShown;
+      const meaningBox = document.getElementById('meaningText');
+      if (isMeaningShown) {
+        meaningBox.classList.add('show');
       } else {
-        editBtn.textContent = '[편집]';
-        editBtn.style.backgroundColor = '#3498db';
+        meaningBox.classList.remove('show');
       }
-      renderList();
     }
 
-    function updateWord(secIdx, type, itemIdx, field, val) {
-      vocabularyData[secIdx][type][itemIdx][field] = val;
+    function nextCard() {
+      if (currentIndex < wordList.length - 1) {
+        currentIndex++;
+        updateCard();
+      } else {
+        alert("모든 단어(201개)를 학습하셨습니다!");
+        currentIndex = 0;
+        updateCard();
+      }
     }
 
-    renderList();
+    function resetCard() {
+      currentIndex = 0;
+      updateCard();
+    }
+
+    function openEditModal() {
+      const current = wordList[currentIndex];
+      document.getElementById('editEn').value = current.en;
+      document.getElementById('editKo').value = current.ko;
+      document.getElementById('editModal').style.display = 'flex';
+    }
+
+    function closeEditModal() {
+      document.getElementById('editModal').style.display = 'none';
+    }
+
+    function saveCurrentWord() {
+      const newEn = document.getElementById('editEn').value;
+      const newKo = document.getElementById('editKo').value;
+      
+      wordList[currentIndex].en = newEn;
+      wordList[currentIndex].ko = newKo;
+      
+      updateCard();
+      closeEditModal();
+    }
+
+    updateCard();
   </script>
 </body>
 </html>
