@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>단어장</title>
+  <style>
+    :root {
+      --primary-color: #2c3e50;
+      --accent-color: #3498db;
+      --bg-color: #f8f9fa;
+      --card-bg: #ffffff;
+      --text-color: #333333;
+      --subtext-color: #555555;
+      --border-color: #e2e8f0;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      background: var(--card-bg);
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+      padding: 24px;
+      position: relative;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 2px solid var(--border-color);
+      padding-bottom: 16px;
+      margin-bottom: 24px;
+    }
+
+    h1 {
+      font-size: 1.5rem;
+      color: var(--primary-color);
+    }
+
+    .edit-btn {
+      background-color: var(--accent-color);
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 6px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+    }
+
+    .edit-btn:hover {
+      background-color: #2980b9;
+    }
+
+    .section-title {
+      font-size: 1.2rem;
+      color: var(--primary-color);
+      margin: 24px 0 12px 0;
+      padding-bottom: 6px;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .word-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .word-item {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      padding: 10px 12px;
+      border-radius: 6px;
+      background-color: #fdfdfd;
+      border: 1px solid var(--border-color);
+      align-items: center;
+    }
+
+    .english {
+      font-weight: 600;
+      color: var(--primary-color);
+      font-size: 1.05rem;
+    }
+
+    .korean {
+      color: var(--subtext-color);
+      font-size: 1rem;
+    }
+
+    .edit-input {
+      width: 100%;
+      padding: 6px 10px;
+      border: 1px solid var(--accent-color);
+      border-radius: 4px;
+      font-size: 0.95rem;
+    }
+
+    @media (max-width: 600px) {
+      .word-item {
+        grid-template-columns: 1fr;
+        gap: 4px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <header>
+      <h1>단어장</h1>
+      <button id="editBtn" class="edit-btn" onclick="toggleEdit()">[편집]</button>
+    </header>
+
+    <div id="wordContainer">
+      <!-- 동적으로 생성되는 영역 -->
+    </div>
+  </div>
+
+  <script>
+    let vocabularyData = [
+      {
+        section: "섹션 A",
+        words: [
+          { en: "contemporary", ko: "현대의, 당대의" },
+          { en: "employ", ko: "(수단으로) 사용하다" },
+          { en: "make reference to", ko: "~를 언급하다, 참조하다" },
+          { en: "abstractionist", ko: "추상화가" },
+          { en: "concerned about", ko: "~에 신경 쓰느, 관심 있는" },
+          { en: "extensive", ko: "광범위한" },
+          { en: "marked", ko: "뚜렷한" },
+          { en: "contrast", ko: "대조" },
+          { en: "decade", ko: "10년" },
+          { en: "utilize", ko: "활용하다" },
+          { en: "disapprovingly", ko: "불만스러운 듯이, 탐탁지 않은 뉘앙스로" },
+          { en: "generation", ko: "세대" },
+          { en: "appropriately", ko: "적절하게" },
+          { en: "integrated", ko: "통합된" },
+          { en: "portable", ko: "휴대용의, 이동식의" },
+          { en: "surpass", ko: "능가하다" },
+          { en: "resemble", ko: "닮다" },
+          { en: "bulky", ko: "부피가 (너무) 큰" }
+        ],
+        choiceWords: [
+          { en: "distinct", ko: "독특한, 별개의" },
+          { en: "extinct", ko: "멸종한" }
+        ]
+      },
+      {
+        section: "섹션 B",
+        words: [
+          { en: "constructive", ko: "건설적인" },
+          { en: "destructive", ko: "파괴적인" },
+          { en: "expand", ko: "확장하다" },
+          { en: "prediction", ko: "예측" },
+          { en: "existence", ko: "존재" },
+          { en: "accordingly", ko: "그에 맞춰" },
+          { en: "embrace", ko: "수용하다" },
+          { en: "destroy", ko: "파괴하다" },
+          { en: "add A to B", ko: "A를 B에 추가하다, 더하다" },
+          { en: "build upon", ko: "~을 기반으로 하다" },
+          { en: "foster", ko: "촉진하다" },
+          { en: "draw upon", ko: "~을 이용하다" },
+          { en: "ever-evolving", ko: "계속 진화하는" }
+        ],
+        choiceWords: [
+          { en: "replace", ko: "교체하다, 대체하다" },
+          { en: "analyze", ko: "분석하다" }
+        ]
+      },
+      {
+        section: "섹션 C-1",
+        words: [
+          { en: "precision", ko: "정확성" },
+          { en: "determinacy", ko: "확정성, 결정성" },
+          { en: "requirement", ko: "필요조건" },
+          { en: "to a large extent", ko: "상당히, 상당 부분" },
+          { en: "ongoing", ko: "계속 진행 중인" },
+          { en: "representation", ko: "진술, 설명, 표현" },
+          { en: "put a premium on", ko: "~을 중시(장려)하다" },
+          { en: "hence", ko: "그러므로, 이에 따라" },
+          { en: "refinement", ko: "정제, 정련" },
+          { en: "varied", ko: "다양한" },
+          { en: "insight", ko: "통찰(력)" },
+          { en: "approximation", ko: "접근, 근접, 근사" },
+          { en: "unmask", ko: "들추어내다, ~의 가면을 벗기다" },
+          { en: "illusion", ko: "환상, 착각" },
+          { en: "alternative", ko: "대안적인, 대안의" },
+          { en: "indeed", ko: "진정, 참으로" }
+        ],
+        choiceWords: [
+          { en: "criterion (pl. criteria)", ko: "기준, 척도" },
+          { en: "seemingly", ko: "겉으로는, 보기에는" },
+          { en: "coexistence", ko: "공존" },
+          { en: "reliability", ko: "신뢰성" }
+        ]
+      },
+      {
+        section: "섹션 C-2",
+        words: [
+          { en: "spontaneously", ko: "저절로" },
+          { en: "unambiguously", ko: "분명히 (↔ 모호하게 ambiguously)" },
+          { en: "slightly", ko: "약간" },
+          { en: "natural selection", ko: "[진화] 자연 선택" },
+          { en: "get rid of", ko: "~를 제거하다, 없애다" },
+          { en: "conversely", ko: "반대로" },
+          { en: "strike ~ down", ko: "~의 목숨을 앗아가다, ~를 쓰러뜨리다" },
+          { en: "reasonably", ko: "마땅히, 합리적으로" },
+          { en: "promptly", ko: "신속하게, 재빨리" },
+          { en: "A outcompete B", ko: "A가 (경쟁에서) B보다 우세하다" },
+          { en: "fortunate", ko: "운이 좋은" },
+          { en: "reproductive", ko: "번식의, 번식이 가능한" },
+          { en: "accumulate", ko: "축적되다, 누적되다" },
+          { en: "so long as (=as long as)", ko: "~하는 한" }
+        ],
+        choiceWords: [
+          { en: "operate", ko: "기능하다, 작용하다" },
+          { en: "suppress", ko: "막다, 억누르다" },
+          { en: "compensate for", ko: "~를 상쇄하다" },
+          { en: "reproduce", ko: "번식하다" }
+        ]
+      }
+    ];
+
+    let isEditing = false;
+
+    function renderList() {
+      const container = document.getElementById('wordContainer');
+      container.innerHTML = '';
+
+      vocabularyData.forEach((sec, secIdx) => {
+        const secHeader = document.createElement('h2');
+        secHeader.className = 'section-title';
+        secHeader.textContent = sec.section;
+        container.appendChild(secHeader);
+
+        const wordList = document.createElement('div');
+        wordList.className = 'word-list';
+
+        sec.words.forEach((item, wIdx) => {
+          const itemDiv = document.createElement('div');
+          itemDiv.className = 'word-item';
+
+          if (isEditing) {
+            itemDiv.innerHTML = `
+              <input type="text" class="edit-input" value="${item.en}" onchange="updateWord(${secIdx}, 'words', ${wIdx}, 'en', this.value)">
+              <input type="text" class="edit-input" value="${item.ko}" onchange="updateWord(${secIdx}, 'words', ${wIdx}, 'ko', this.value)">
+            `;
+          } else {
+            itemDiv.innerHTML = `
+              <div class="english">${item.en}</div>
+              <div class="korean">${item.ko}</div>
+            `;
+          }
+          wordList.appendChild(itemDiv);
+        });
+
+        container.appendChild(wordList);
+
+        if (sec.choiceWords && sec.choiceWords.length > 0) {
+          const choiceHeader = document.createElement('h3');
+          choiceHeader.className = 'section-title';
+          choiceHeader.style.fontSize = '1rem';
+          choiceHeader.style.color = '#7f8c8d';
+          choiceHeader.textContent = '선지 단어';
+          container.appendChild(choiceHeader);
+
+          const choiceList = document.createElement('div');
+          choiceList.className = 'word-list';
+
+          sec.choiceWords.forEach((item, cIdx) => {
+            const itemDiv = document.createElement('div');
+            itemDiv.className = 'word-item';
+
+            if (isEditing) {
+              itemDiv.innerHTML = `
+                <input type="text" class="edit-input" value="${item.en}" onchange="updateWord(${secIdx}, 'choiceWords', ${cIdx}, 'en', this.value)">
+                <input type="text" class="edit-input" value="${item.ko}" onchange="updateWord(${secIdx}, 'choiceWords', ${cIdx}, 'ko', this.value)">
+              `;
+            } else {
+              itemDiv.innerHTML = `
+                <div class="english">${item.en}</div>
+                <div class="korean">${item.ko}</div>
+              `;
+            }
+            choiceList.appendChild(itemDiv);
+          });
+
+          container.appendChild(choiceList);
+        }
+      });
+    }
+
+    function toggleEdit() {
+      isEditing = !isEditing;
+      const editBtn = document.getElementById('editBtn');
+      if (isEditing) {
+        editBtn.textContent = '[저장]';
+        editBtn.style.backgroundColor = '#27ae60';
+      } else {
+        editBtn.textContent = '[편집]';
+        editBtn.style.backgroundColor = '#3498db';
+      }
+      renderList();
+    }
+
+    function updateWord(secIdx, type, itemIdx, field, val) {
+      vocabularyData[secIdx][type][itemIdx][field] = val;
+    }
+
+    renderList();
+  </script>
+</body>
+</html>
