@@ -3,8 +3,15 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>영단어 학습 카드 - 무작위장 탑재 모드</title>
+  <title>영단어 학습 카드 - 관리자 모드 탑재</title>
   <style>
+    :root {
+      /* 기본 메인 테마 색상 (청록색 계열) */
+      --main-color: #00a896;
+      --main-dark: #00796b;
+      --main-light: #e6f4f1;
+    }
+
     * {
       box-sizing: border-box;
       margin: 0;
@@ -46,7 +53,7 @@
     }
 
     .edit-btn {
-      background-color: #00a896;
+      background-color: var(--main-color);
       color: white;
       border: none;
     }
@@ -57,7 +64,7 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      background: #e6f4f1;
+      background: var(--main-light);
       padding: 10px 16px;
       border-radius: 12px;
       margin-bottom: 10px;
@@ -65,7 +72,7 @@
 
     .chapter-info {
       font-weight: 700;
-      color: #00796b;
+      color: var(--main-dark);
       font-size: 0.95rem;
       cursor: pointer;
       display: flex;
@@ -82,7 +89,7 @@
 
     .round-text { color: #d9534f; font-weight: 700; }
     .progress-text { color: #555; }
-    .known-text { color: #00a896; font-weight: 700; }
+    .known-text { color: var(--main-color); font-weight: 700; }
 
     .card-container {
       width: 100%;
@@ -98,7 +105,7 @@
     .word-text {
       font-size: 2.6rem;
       font-weight: 700;
-      color: #009688;
+      color: var(--main-color);
       text-align: center;
       word-break: break-word;
       margin-bottom: 20px;
@@ -115,7 +122,7 @@
       justify-content: center;
       visibility: hidden;
       padding: 12px;
-      background-color: #f0f7f6;
+      background-color: var(--main-light);
       border-radius: 12px;
       width: 100%;
     }
@@ -154,7 +161,7 @@
     }
 
     .btn-dark { background-color: #333337; }
-    .btn-teal { background-color: #00a896; }
+    .btn-teal { background-color: var(--main-color); }
 
     /* 모달 */
     .modal {
@@ -174,7 +181,7 @@
       border-radius: 20px;
       width: 100%;
       max-width: 400px;
-      max-height: 80vh;
+      max-height: 85vh;
       overflow-y: auto;
       display: flex;
       flex-direction: column;
@@ -206,9 +213,65 @@
     }
 
     .chapter-list-item.active {
-      border: 2px solid #00a896;
-      background: #e6f4f1;
-      color: #00796b;
+      border: 2px solid var(--main-color);
+      background: var(--main-light);
+      color: var(--main-dark);
+    }
+
+    /* 관리자 모드 섹션 */
+    .admin-section {
+      margin-top: 15px;
+      padding-top: 15px;
+      border-top: 2px dashed #ddd;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .admin-title {
+      font-size: 0.95rem;
+      font-weight: bold;
+      color: #555;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .admin-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #f8f9fa;
+      padding: 10px 12px;
+      border-radius: 10px;
+    }
+
+    .admin-label {
+      font-size: 0.85rem;
+      font-weight: bold;
+      color: #333;
+    }
+
+    .color-picker-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .color-picker-input {
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      appearance: none;
+      width: 32px;
+      height: 32px;
+      background-color: transparent;
+      border: none;
+      cursor: pointer;
+    }
+
+    .color-picker-input::-webkit-color-swatch {
+      border-radius: 50%;
+      border: 2px solid #ddd;
     }
 
     .modal-buttons {
@@ -226,8 +289,9 @@
       cursor: pointer;
     }
 
-    .save-btn { background-color: #00a896; color: white; }
+    .save-btn { background-color: var(--main-color); color: white; }
     .cancel-btn { background-color: #ccc; color: #333; }
+    .select-field { padding: 6px 10px; border-radius: 8px; border: 1px solid #ccc; font-weight: bold; }
     .input-field { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 10px; font-size: 1rem; }
   </style>
 </head>
@@ -277,8 +341,30 @@
   <!-- 챕터 선택 모달 -->
   <div class="modal" id="chapterModal">
     <div class="modal-content">
-      <h3 style="margin-bottom: 10px;">챕터 선택</h3>
+      <h3 style="margin-bottom: 5px;">챕터 선택</h3>
       <div id="chapterList" style="display: flex; flex-direction: column; gap: 8px;"></div>
+      
+      <!-- 관리자 모드 -->
+      <div class="admin-section">
+        <div class="admin-title">🛠️ 관리자 모드</div>
+        
+        <!-- 1. 건너뛰기 -->
+        <div class="admin-row">
+          <span class="admin-label">🔓 챕터 잠금 해제</span>
+          <select id="unlockSelect" class="select-field" onchange="handleAdminUnlock(this.value)">
+            <option value="">선택</option>
+          </select>
+        </div>
+
+        <!-- 2. 색상 변경 -->
+        <div class="admin-row">
+          <span class="admin-label">🎨 테마 색상 변경</span>
+          <div class="color-picker-wrapper">
+            <input type="color" id="themeColorPicker" class="color-picker-input" value="#00a896" onchange="changeThemeColor(this.value)">
+          </div>
+        </div>
+      </div>
+
       <div class="modal-buttons">
         <button class="modal-btn cancel-btn" onclick="closeChapterModal()">닫기</button>
       </div>
@@ -402,19 +488,18 @@
       { en: "renewable", ko: "재생 가능한" }
     ];
 
-    let currentChapter = 1; // 숫자면 일반 챕터, 'random'이면 무작위장
+    let currentChapter = 1;
     let unlockedChapter = 1;
     
-    let totalTargetWords = []; // 이번 챕터/세트 총 학습 대상 단어
-    let activeQueue = [];      // 현재 회차에서 풀고 있는 단어들
-    let nextQueue = [];        // 공부하겠음 눌러서 다음 회차로 넘어갈 단어들
+    let totalTargetWords = [];
+    let activeQueue = [];
+    let nextQueue = [];
     
     let currentIndex = 0;
-    let roundCount = 1;        // 현재 회차 (1회차, 2회차...)
-    let clearedCount = 0;      // 완벽히 암기 완료된 단어 수
+    let roundCount = 1;
+    let clearedCount = 0;
     let isMeaningShown = false;
 
-    // 배열 셔플 (무작위 섞기)
     function shuffleArray(array) {
       const arr = [...array];
       for (let i = arr.length - 1; i > 0; i--) {
@@ -424,22 +509,19 @@
       return arr;
     }
 
-    // 챕터 초기화 (일반 챕터 또는 무작위장)
     function initChapter(chap) {
       currentChapter = chap;
 
       if (chap === 'random') {
-        // 전체 단어 중 무작위 5개 뽑기 (잠금 여부 상관없이 전체 대상)
         const shuffledAll = shuffleArray(rawWordList);
         const sampleSize = Math.min(5, rawWordList.length);
         totalTargetWords = JSON.parse(JSON.stringify(shuffledAll.slice(0, sampleSize)));
       } else {
-        // 일반 챕터 (1장 ~ N장)
         const count = Math.min(chap * 20, rawWordList.length);
         totalTargetWords = JSON.parse(JSON.stringify(rawWordList.slice(0, count)));
       }
       
-      activeQueue = [...totalTargetWords]; // 1회차 시작
+      activeQueue = [...totalTargetWords];
       nextQueue = [];
       
       currentIndex = 0;
@@ -449,7 +531,6 @@
       updateCard();
     }
 
-    // 카드 화면 갱신
     function updateCard() {
       const current = activeQueue[currentIndex];
       const totalCount = totalTargetWords.length;
@@ -471,7 +552,6 @@
       document.getElementById('meaningText').classList.remove('show');
     }
 
-    // 뜻 표시 토글
     function toggleMeaning() {
       isMeaningShown = !isMeaningShown;
       const meaningBox = document.getElementById('meaningText');
@@ -482,27 +562,22 @@
       }
     }
 
-    // [알고있음] 버튼 -> 이 단어는 클리어됨
     function handleKnow() {
       clearedCount++;
       nextCard();
     }
 
-    // [공부하겠음] 버튼 -> 이 단어는 다음 회차에 다시 공부
     function handleStudy() {
       nextQueue.push(activeQueue[currentIndex]);
       nextCard();
     }
 
-    // 다음 카드로 이동
     function nextCard() {
       if (currentIndex < activeQueue.length - 1) {
         currentIndex++;
         updateCard();
       } else {
-        // 1개 회차 종료 시점
         if (nextQueue.length === 0) {
-          // 모르는 단어가 0개일 때 (모두 알고있음 클리어!)
           if (currentChapter === 'random') {
             alert(`🎉 무작위 5개 단어를 완벽히 클리어 하셨습니다! (${roundCount}회차 진행)\n새로운 무작위 5개 단어로 시작합니다.`);
             initChapter('random');
@@ -525,20 +600,16 @@
             }
           }
         } else {
-          // 아직 못 외운 단어가 남았을 때 -> 다음 회차 진행 (무작위 섞기)
           alert(`↻ ${roundCount}회차가 끝났습니다!\n아직 남은 단어 ${nextQueue.length}개를 무작위로 섞어서 ${roundCount + 1}회차를 시작합니다.`);
-          
-          activeQueue = shuffleArray(nextQueue); // 남은 단어 랜덤 섞기
+          activeQueue = shuffleArray(nextQueue);
           nextQueue = [];
           currentIndex = 0;
           roundCount++;
-          
           updateCard();
         }
       }
     }
 
-    // 현재 챕터 다시 시작
     function resetChapter() {
       const titleName = currentChapter === 'random' ? '무작위장' : `제 ${currentChapter}장`;
       if (confirm(`${titleName}을(를) 처음부터 다시 시작하시겠습니까?`)) {
@@ -551,7 +622,7 @@
       const listContainer = document.getElementById('chapterList');
       listContainer.innerHTML = '';
 
-      // 1. 무작위장 상단 추가
+      // 무작위장
       const randomItem = document.createElement('div');
       const isRandomActive = currentChapter === 'random';
       randomItem.className = `chapter-list-item random-item ${isRandomActive ? 'active' : ''}`;
@@ -565,8 +636,12 @@
       };
       listContainer.appendChild(randomItem);
 
-      // 2. 일반 챕터 목록 생성
+      // 일반 챕터
       const totalChapters = Math.ceil(rawWordList.length / 20);
+
+      // 잠금 해제 드롭다운 옵션 채우기
+      const unlockSelect = document.getElementById('unlockSelect');
+      unlockSelect.innerHTML = '<option value="">선택</option>';
 
       for (let i = 1; i <= totalChapters; i++) {
         const count = Math.min(i * 20, rawWordList.length);
@@ -588,6 +663,12 @@
         }
 
         listContainer.appendChild(item);
+
+        // 건너뛰기 드롭다운 옵션 추가
+        const option = document.createElement('option');
+        option.value = i;
+        option.textContent = `제 ${i}장까지 해제`;
+        unlockSelect.appendChild(option);
       }
 
       document.getElementById('chapterModal').style.display = 'flex';
@@ -595,6 +676,36 @@
 
     function closeChapterModal() {
       document.getElementById('chapterModal').style.display = 'none';
+    }
+
+    /* 관리자: 잠금 해제 처리 */
+    function handleAdminUnlock(targetChap) {
+      if (!targetChap) return;
+      unlockedChapter = parseInt(targetChap);
+      alert(`🔓 제 1장부터 제 ${unlockedChapter}장까지 잠금이 해제되었습니다!`);
+      openChapterModal(); // 목록 새로고침
+    }
+
+    /* 관리자: 색상 변경 처리 */
+    function changeThemeColor(hexColor) {
+      // Hex를 RGB로 변환하여 보조 색상(Dark/Light) 계산
+      const r = parseInt(hexColor.substr(1,2), 16);
+      const g = parseInt(hexColor.substr(3,2), 16);
+      const b = parseInt(hexColor.substr(5,2), 16);
+
+      // 조금 더 어두운 색상 (Dark)
+      const darkR = Math.max(0, Math.floor(r * 0.7));
+      const darkG = Math.max(0, Math.floor(g * 0.7));
+      const darkB = Math.max(0, Math.floor(b * 0.7));
+      const darkHex = `rgb(${darkR}, ${darkG}, ${darkB})`;
+
+      // 밝은 배경 색상 (Light - 연한 파스텔조)
+      const lightHex = `rgba(${r}, ${g}, ${b}, 0.12)`;
+
+      // CSS 변수 적용
+      document.documentElement.style.setProperty('--main-color', hexColor);
+      document.documentElement.style.setProperty('--main-dark', darkHex);
+      document.documentElement.style.setProperty('--main-light', lightHex);
     }
 
     /* 편집 모달 */
