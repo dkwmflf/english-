@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>영단어 학습 카드 - 완전 클리어 모드</title>
+  <title>영단어 학습 카드 - 무작위장 탑재 모드</title>
   <style>
     * {
       box-sizing: border-box;
@@ -191,6 +191,12 @@
       align-items: center;
       cursor: pointer;
       font-weight: bold;
+    }
+
+    .chapter-list-item.random-item {
+      background: #fff3bf;
+      border: 1px solid #fcc419;
+      color: #d9480f;
     }
 
     .chapter-list-item.locked {
@@ -396,10 +402,10 @@
       { en: "renewable", ko: "재생 가능한" }
     ];
 
-    let currentChapter = 1;
+    let currentChapter = 1; // 숫자면 일반 챕터, 'random'이면 무작위장
     let unlockedChapter = 1;
     
-    let totalTargetWords = []; // 이번 챕터 총 학습 대상 단어
+    let totalTargetWords = []; // 이번 챕터/세트 총 학습 대상 단어
     let activeQueue = [];      // 현재 회차에서 풀고 있는 단어들
     let nextQueue = [];        // 공부하겠음 눌러서 다음 회차로 넘어갈 단어들
     
@@ -418,13 +424,22 @@
       return arr;
     }
 
-    // 챕터 초기화
+    // 챕터 초기화 (일반 챕터 또는 무작위장)
     function initChapter(chap) {
       currentChapter = chap;
-      const count = Math.min(chap * 20, rawWordList.length);
+
+      if (chap === 'random') {
+        // 전체 단어 중 무작위 5개 뽑기 (잠금 여부 상관없이 전체 대상)
+        const shuffledAll = shuffleArray(rawWordList);
+        const sampleSize = Math.min(5, rawWordList.length);
+        totalTargetWords = JSON.parse(JSON.stringify(shuffledAll.slice(0, sampleSize)));
+      } else {
+        // 일반 챕터 (1장 ~ N장)
+        const count = Math.min(chap * 20, rawWordList.length);
+        totalTargetWords = JSON.parse(JSON.stringify(rawWordList.slice(0, count)));
+      }
       
-      totalTargetWords = JSON.parse(JSON.stringify(rawWordList.slice(0, count))); // 객체 깊은 복사
-      activeQueue = [...totalTargetWords]; // 1회차는 원본 순서대로 시작
+      activeQueue = [...totalTargetWords]; // 1회차 시작
       nextQueue = [];
       
       currentIndex = 0;
@@ -439,7 +454,12 @@
       const current = activeQueue[currentIndex];
       const totalCount = totalTargetWords.length;
       
-      document.getElementById('chapterTitle').innerHTML = `제 ${currentChapter}장 (No.1~${totalCount}) ▾`;
+      if (currentChapter === 'random') {
+        document.getElementById('chapterTitle').innerHTML = `🎲 무작위장 (5개) ▾`;
+      } else {
+        document.getElementById('chapterTitle').innerHTML = `제 ${currentChapter}장 (No.1~${totalCount}) ▾`;
+      }
+
       document.getElementById('wordText').textContent = current.en;
       document.getElementById('meaningText').textContent = current.ko;
       
@@ -483,21 +503,26 @@
         // 1개 회차 종료 시점
         if (nextQueue.length === 0) {
           // 모르는 단어가 0개일 때 (모두 알고있음 클리어!)
-          alert(`🎉 축하합니다! 제 ${currentChapter}장의 모든 단어(${totalTargetWords.length}개)를 완전 클리어 하셨습니다! (${roundCount}회차 진행)`);
-          
-          if (currentChapter === unlockedChapter && (currentChapter * 20) < rawWordList.length) {
-            unlockedChapter++;
-          }
-          
-          if ((currentChapter * 20) < rawWordList.length) {
-            if (confirm(`다음 제 ${currentChapter + 1}장을 시작하시겠습니까?`)) {
-              initChapter(currentChapter + 1);
+          if (currentChapter === 'random') {
+            alert(`🎉 무작위 5개 단어를 완벽히 클리어 하셨습니다! (${roundCount}회차 진행)\n새로운 무작위 5개 단어로 시작합니다.`);
+            initChapter('random');
+          } else {
+            alert(`🎉 축하합니다! 제 ${currentChapter}장의 모든 단어(${totalTargetWords.length}개)를 완전 클리어 하셨습니다! (${roundCount}회차 진행)`);
+            
+            if (currentChapter === unlockedChapter && (currentChapter * 20) < rawWordList.length) {
+              unlockedChapter++;
+            }
+            
+            if ((currentChapter * 20) < rawWordList.length) {
+              if (confirm(`다음 제 ${currentChapter + 1}장을 시작하시겠습니까?`)) {
+                initChapter(currentChapter + 1);
+              } else {
+                initChapter(currentChapter);
+              }
             } else {
+              alert("모든 챕터를 완벽히 수료하셨습니다!");
               initChapter(currentChapter);
             }
-          } else {
-            alert("모든 챕터를 완벽히 수료하셨습니다!");
-            initChapter(currentChapter);
           }
         } else {
           // 아직 못 외운 단어가 남았을 때 -> 다음 회차 진행 (무작위 섞기)
@@ -515,7 +540,8 @@
 
     // 현재 챕터 다시 시작
     function resetChapter() {
-      if (confirm(`제 ${currentChapter}장을 처음부터 다시 시작하시겠습니까?`)) {
+      const titleName = currentChapter === 'random' ? '무작위장' : `제 ${currentChapter}장`;
+      if (confirm(`${titleName}을(를) 처음부터 다시 시작하시겠습니까?`)) {
         initChapter(currentChapter);
       }
     }
@@ -524,6 +550,22 @@
     function openChapterModal() {
       const listContainer = document.getElementById('chapterList');
       listContainer.innerHTML = '';
+
+      // 1. 무작위장 상단 추가
+      const randomItem = document.createElement('div');
+      const isRandomActive = currentChapter === 'random';
+      randomItem.className = `chapter-list-item random-item ${isRandomActive ? 'active' : ''}`;
+      randomItem.innerHTML = `
+        <span>🎲 무작위장 (전체 단어 중 5개)</span>
+        <span>${isRandomActive ? '학습중' : '선택'}</span>
+      `;
+      randomItem.onclick = () => {
+        initChapter('random');
+        closeChapterModal();
+      };
+      listContainer.appendChild(randomItem);
+
+      // 2. 일반 챕터 목록 생성
       const totalChapters = Math.ceil(rawWordList.length / 20);
 
       for (let i = 1; i <= totalChapters; i++) {
