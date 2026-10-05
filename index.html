@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>영단어 학습 카드 - 관리자 모드 탑재</title>
+  <title>young단어를 암기하자</title>
   <style>
     :root {
       /* 기본 메인 테마 색상 (청록색 계열) */
@@ -536,7 +536,7 @@
       const totalCount = totalTargetWords.length;
       
       if (currentChapter === 'random') {
-        document.getElementById('chapterTitle').innerHTML = `🎲 무작위장 (5개) ▾`;
+        document.getElementById('chapterTitle').innerHTML = `😶‍🌫️ 랜덤단어 (5개) ▾`;
       } else {
         document.getElementById('chapterTitle').innerHTML = `제 ${currentChapter}장 (No.1~${totalCount}) ▾`;
       }
@@ -579,7 +579,7 @@
       } else {
         if (nextQueue.length === 0) {
           if (currentChapter === 'random') {
-            alert(`🎉 무작위 5개 단어를 완벽히 클리어 하셨습니다! (${roundCount}회차 진행)\n새로운 무작위 5개 단어로 시작합니다.`);
+            alert(`🎉 랜덤 5개 단어를 완벽히 클리어 하셨습니다! (${roundCount}회차 진행)\n새로운 랜덤 5개 단어로 시작합니다.`);
             initChapter('random');
           } else {
             alert(`🎉 축하합니다! 제 ${currentChapter}장의 모든 단어(${totalTargetWords.length}개)를 완전 클리어 하셨습니다! (${roundCount}회차 진행)`);
@@ -611,7 +611,7 @@
     }
 
     function resetChapter() {
-      const titleName = currentChapter === 'random' ? '무작위장' : `제 ${currentChapter}장`;
+      const titleName = currentChapter === 'random' ? '랜덤단어' : `제 ${currentChapter}장`;
       if (confirm(`${titleName}을(를) 처음부터 다시 시작하시겠습니까?`)) {
         initChapter(currentChapter);
       }
@@ -622,12 +622,12 @@
       const listContainer = document.getElementById('chapterList');
       listContainer.innerHTML = '';
 
-      // 무작위장
+      // 랜덤단어
       const randomItem = document.createElement('div');
       const isRandomActive = currentChapter === 'random';
       randomItem.className = `chapter-list-item random-item ${isRandomActive ? 'active' : ''}`;
       randomItem.innerHTML = `
-        <span>🎲 무작위장 (전체 단어 중 5개)</span>
+        <span>😶‍🌫️ 랜덤단어 (전체 단어 중 5개)</span>
         <span>${isRandomActive ? '학습중' : '선택'}</span>
       `;
       randomItem.onclick = () => {
